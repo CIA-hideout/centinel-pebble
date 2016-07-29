@@ -3,8 +3,21 @@
 
 //Declare variables
 static Window *s_window;
-static TextLayer *s_text_layer;
+static TextLayer *s_title_layer;
+static TextLayer *s_spent_layer;
+static TextLayer *s_saved_layer;
 
+static GFont title_font;
+static GFont money_font; //Use for spend & saved text layer
+
+char spent_header[256] = "SPENT: $";
+char spent_amount[] = "500";  //default
+char saved_header[256] = "SAVED: $";
+char saved_amount[] = "200";  //default
+
+/*
+Start Programming here
+*/
 
 // Start app
 int main(void) {
@@ -36,7 +49,15 @@ static void prv_init(void) {
 
 //Destory Resources to clear memory
 static void prv_window_unload(Window *window) {
-  text_layer_destroy(s_text_layer);
+
+  //Unload Text Layer from memory
+  text_layer_destroy(s_title_layer);
+  text_layer_destroy(s_spent_layer);
+  text_layer_destroy(s_saved_layer);
+
+  //Unload GFont form memory
+  fonts_unload_custom_font(title_font);
+  fonts_unload_custom_font(money_font);
 }
 
 /*
@@ -48,10 +69,41 @@ static void prv_window_load(Window *window) {
   Layer *window_layer = window_get_root_layer(window);
   GRect bounds = layer_get_bounds(window_layer);
 
-  s_text_layer = text_layer_create(GRect(0, 72, bounds.size.w, 20));
-  text_layer_set_text(s_text_layer, "Press a button");
-  text_layer_set_text_alignment(s_text_layer, GTextAlignmentCenter);
-  layer_add_child(window_layer, text_layer_get_layer(s_text_layer));
+  //Create GFont
+  title_font = fonts_load_custom_font(resource_get_handle(RESOURCE_ID_FONT_ROBOTO_MEDIUM_20));
+  money_font = fonts_load_custom_font(resource_get_handle(RESOURCE_ID_FONT_ROBOTO_CONDENSED_REGULAR_12));
+
+  //Set title text layer accordingly
+  s_title_layer = text_layer_create(GRect(PBL_IF_ROUND_ELSE(0,10), PBL_IF_ROUND_ELSE(62,15),
+                      bounds.size.w, 24));
+  text_layer_set_font(s_title_layer, title_font);
+  APP_LOG(APP_LOG_LEVEL_DEBUG, "Set Title Text font");  //LOGGING
+  text_layer_set_text(s_title_layer, "WEEKLY");
+  text_layer_set_text_alignment(s_title_layer, PBL_IF_ROUND_ELSE(GTextAlignmentCenter,GTextAlignmentLeft));
+  layer_add_child(window_layer, text_layer_get_layer(s_title_layer));
+
+
+  char* test_spent = strcat(spent_header, spent_amount);
+  APP_LOG(APP_LOG_LEVEL_DEBUG, test_spent);           //LOGGING
+  char* test_saved = strcat(saved_header, saved_amount);
+  APP_LOG(APP_LOG_LEVEL_DEBUG, test_saved);           //LOGGING
+
+
+  //Set SPENT Text Layer accordingly
+  s_spent_layer = text_layer_create(GRect(PBL_IF_ROUND_ELSE(0,10), PBL_IF_ROUND_ELSE(90,44),
+                      bounds.size.w, 14));
+  text_layer_set_font(s_spent_layer, money_font);
+  text_layer_set_text(s_spent_layer, test_spent);
+  text_layer_set_text_alignment(s_spent_layer, PBL_IF_ROUND_ELSE(GTextAlignmentCenter,GTextAlignmentLeft));
+  layer_add_child(window_layer, text_layer_get_layer(s_spent_layer));
+
+  //Set SAVED Text Layer accordingly
+  s_saved_layer = text_layer_create(GRect(PBL_IF_ROUND_ELSE(0,10), PBL_IF_ROUND_ELSE(104,58),
+                      bounds.size.w, 14));
+  text_layer_set_font(s_saved_layer, money_font);
+  text_layer_set_text(s_saved_layer, test_saved);
+  text_layer_set_text_alignment(s_saved_layer, PBL_IF_ROUND_ELSE(GTextAlignmentCenter,GTextAlignmentLeft));
+  layer_add_child(window_layer, text_layer_get_layer(s_saved_layer));
 }
 
 //Subscribe to clicks handlers (Make sure that you can click buttons in app)
@@ -63,15 +115,15 @@ static void prv_click_config_provider(void *context) {
 
 //What happens when UP button is pressed
 static void prv_up_click_handler(ClickRecognizerRef recognizer, void *context) {
-  text_layer_set_text(s_text_layer, "Up");
+  text_layer_set_text(s_title_layer, "Up");
 }
 
 //What happens when DOWN button is pressed
 static void prv_down_click_handler(ClickRecognizerRef recognizer, void *context) {
-  text_layer_set_text(s_text_layer, "Down");
+  text_layer_set_text(s_title_layer, "Down");
 }
 
 //What happen when MIDDLE button is pressed
 static void prv_select_click_handler(ClickRecognizerRef recognizer, void *context) {
-  text_layer_set_text(s_text_layer, "Select");
+  text_layer_set_text(s_title_layer, "Select");
 }

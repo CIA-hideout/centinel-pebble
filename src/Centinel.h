@@ -3,8 +3,8 @@
 
 //Start Application
 int main(void);
-static void prv_deinit(void);
 static void prv_init(void);
+static void prv_deinit(void);
 
 //Load and Unload Windows and Resources
 static void prv_window_load(Window *window);
