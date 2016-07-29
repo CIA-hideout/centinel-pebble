@@ -10,10 +10,12 @@ static TextLayer *s_saved_layer;
 static GFont title_font;
 static GFont money_font; //Use for spend & saved text layer
 
-char spent_header[256] = "SPENT: $";
+char spent_header[64] = "SPENT: $";
 char spent_amount[] = "500";  //default
-char saved_header[256] = "SAVED: $";
+char saved_header[64] = "SAVED: $";
 char saved_amount[] = "200";  //default
+
+int savings, spendings;
 
 /*
 Start Programming here
@@ -43,6 +45,10 @@ static void prv_init(void) {
     .load = prv_window_load,
     .unload = prv_window_unload,
   });
+
+  //Create BG Layer (SPENDINGS) - FFAA00 (orange)
+  window_set_background_color(s_window, GColorChromeYellow);
+
   const bool animated = true;
   window_stack_push(s_window, animated);
 }
@@ -69,17 +75,22 @@ static void prv_window_load(Window *window) {
   Layer *window_layer = window_get_root_layer(window);
   GRect bounds = layer_get_bounds(window_layer);
 
+
+
+
+
   //Create GFont
-  title_font = fonts_load_custom_font(resource_get_handle(RESOURCE_ID_FONT_ROBOTO_MEDIUM_20));
-  money_font = fonts_load_custom_font(resource_get_handle(RESOURCE_ID_FONT_ROBOTO_CONDENSED_REGULAR_12));
+  title_font = fonts_load_custom_font(resource_get_handle(RESOURCE_ID_FONT_ROBOTO_MEDIUM_24));
+  money_font = fonts_load_custom_font(resource_get_handle(RESOURCE_ID_FONT_ROBOTO_CONDENSED_REGULAR_14));
 
   //Set title text layer accordingly
-  s_title_layer = text_layer_create(GRect(PBL_IF_ROUND_ELSE(0,10), PBL_IF_ROUND_ELSE(62,15),
-                      bounds.size.w, 24));
+  s_title_layer = text_layer_create(GRect(PBL_IF_ROUND_ELSE(0,10), PBL_IF_ROUND_ELSE(58,15),
+                      bounds.size.w, 28));
   text_layer_set_font(s_title_layer, title_font);
   APP_LOG(APP_LOG_LEVEL_DEBUG, "Set Title Text font");  //LOGGING
   text_layer_set_text(s_title_layer, "WEEKLY");
   text_layer_set_text_alignment(s_title_layer, PBL_IF_ROUND_ELSE(GTextAlignmentCenter,GTextAlignmentLeft));
+  text_layer_set_background_color(s_title_layer, GColorClear);
   layer_add_child(window_layer, text_layer_get_layer(s_title_layer));
 
 
@@ -90,20 +101,23 @@ static void prv_window_load(Window *window) {
 
 
   //Set SPENT Text Layer accordingly
-  s_spent_layer = text_layer_create(GRect(PBL_IF_ROUND_ELSE(0,10), PBL_IF_ROUND_ELSE(90,44),
-                      bounds.size.w, 14));
+  s_spent_layer = text_layer_create(GRect(PBL_IF_ROUND_ELSE(0,10), PBL_IF_ROUND_ELSE(91,48),
+                      bounds.size.w, 16));
   text_layer_set_font(s_spent_layer, money_font);
   text_layer_set_text(s_spent_layer, test_spent);
   text_layer_set_text_alignment(s_spent_layer, PBL_IF_ROUND_ELSE(GTextAlignmentCenter,GTextAlignmentLeft));
+  text_layer_set_background_color(s_spent_layer, GColorClear);
   layer_add_child(window_layer, text_layer_get_layer(s_spent_layer));
 
   //Set SAVED Text Layer accordingly
-  s_saved_layer = text_layer_create(GRect(PBL_IF_ROUND_ELSE(0,10), PBL_IF_ROUND_ELSE(104,58),
-                      bounds.size.w, 14));
+  s_saved_layer = text_layer_create(GRect(PBL_IF_ROUND_ELSE(0,10), PBL_IF_ROUND_ELSE(106,63),
+                      bounds.size.w, 16));
   text_layer_set_font(s_saved_layer, money_font);
   text_layer_set_text(s_saved_layer, test_saved);
   text_layer_set_text_alignment(s_saved_layer, PBL_IF_ROUND_ELSE(GTextAlignmentCenter,GTextAlignmentLeft));
+  text_layer_set_background_color(s_saved_layer, GColorClear);
   layer_add_child(window_layer, text_layer_get_layer(s_saved_layer));
+
 }
 
 //Subscribe to clicks handlers (Make sure that you can click buttons in app)

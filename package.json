@@ -24,13 +24,13 @@
       "media": [
         {
             "file": "fonts/roboto_medium.ttf",
-            "name": "FONT_ROBOTO_MEDIUM_20",
+            "name": "FONT_ROBOTO_MEDIUM_24",
             "targetPlatforms": null,
             "type": "font"
         },
         {
             "file": "fonts/roboto_condensed_regular.ttf",
-            "name": "FONT_ROBOTO_CONDENSED_REGULAR_12",
+            "name": "FONT_ROBOTO_CONDENSED_REGULAR_14",
             "targetPlatforms": null,
             "type": "font"
         }
