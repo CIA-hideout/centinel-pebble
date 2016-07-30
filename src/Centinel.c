@@ -6,6 +6,7 @@ static Window *s_window;
 static TextLayer *s_title_layer;
 static TextLayer *s_spent_layer;
 static TextLayer *s_saved_layer;
+static TextLayer *s_savings_layer;
 
 static GFont title_font;
 static GFont money_font; //Use for spend & saved text layer
@@ -15,7 +16,9 @@ char spent_amount[] = "500";  //default
 char saved_header[64] = "SAVED: $";
 char saved_amount[] = "200";  //default
 
-int savings, spendings;
+double weekly_savings = 200;
+double weekly_spendings = 500;
+int draw_savings_layer_basalt, draw_savings_layer_chalk;
 
 /*
 Start Programming here
@@ -60,6 +63,7 @@ static void prv_window_unload(Window *window) {
   text_layer_destroy(s_title_layer);
   text_layer_destroy(s_spent_layer);
   text_layer_destroy(s_saved_layer);
+  text_layer_destroy(s_savings_layer);
 
   //Unload GFont form memory
   fonts_unload_custom_font(title_font);
@@ -75,13 +79,22 @@ static void prv_window_load(Window *window) {
   Layer *window_layer = window_get_root_layer(window);
   GRect bounds = layer_get_bounds(window_layer);
 
-
-
-
-
   //Create GFont
   title_font = fonts_load_custom_font(resource_get_handle(RESOURCE_ID_FONT_ROBOTO_MEDIUM_24));
   money_font = fonts_load_custom_font(resource_get_handle(RESOURCE_ID_FONT_ROBOTO_CONDENSED_REGULAR_14));
+
+  draw_savings_layer_basalt = (weekly_savings/(weekly_savings + weekly_spendings))*168;
+  draw_savings_layer_chalk = (weekly_savings/(weekly_savings + weekly_spendings))*180;
+
+  //Set s_savings_layer
+  s_savings_layer = text_layer_create(GRect(0, PBL_IF_ROUND_ELSE(180-draw_savings_layer_chalk,
+                          168-draw_savings_layer_basalt), bounds.size.w, PBL_IF_ROUND_ELSE(180 - draw_savings_layer_chalk,
+                          168 - draw_savings_layer_basalt)));
+
+  text_layer_set_background_color(s_savings_layer, GColorTiffanyBlue);
+  layer_add_child(window_layer, text_layer_get_layer(s_savings_layer));
+
+
 
   //Set title text layer accordingly
   s_title_layer = text_layer_create(GRect(PBL_IF_ROUND_ELSE(0,10), PBL_IF_ROUND_ELSE(58,15),
