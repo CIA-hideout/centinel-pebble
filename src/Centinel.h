@@ -16,4 +16,9 @@ static void prv_down_click_handler(ClickRecognizerRef recognizer, void *context)
 static void prv_up_click_handler(ClickRecognizerRef recognizer, void *context);
 static void prv_select_click_handler(ClickRecognizerRef recognizer, void *context);
 
+
+//Drawing things
+static void canvas_update_proc(Layer *layer, GContext *ctx);
+
+
 #endif

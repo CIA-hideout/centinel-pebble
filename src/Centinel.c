@@ -6,19 +6,25 @@ static Window *s_window;
 static TextLayer *s_title_layer;
 static TextLayer *s_spent_layer;
 static TextLayer *s_saved_layer;
-static TextLayer *s_savings_layer;
+static Layer *s_savings_layer;
 
 static GFont title_font;
 static GFont money_font; //Use for spend & saved text layer
 
-char spent_header[64] = "SPENT: $";
-char spent_amount[] = "500";  //default
-char saved_header[64] = "SAVED: $";
-char saved_amount[] = "200";  //default
+static char spent_header[64] = "SPENT: $";
+char *spent_amount_daily = "65";
+char *spent_amount_weekly = "500";
+char *spent_amount_monthly = "1200";
+static char saved_header[64] = "SAVED: $";
+char *saved_amount_daily = "16";
+char *saved_amount_weekly = "200";
+char *saved_amount_monthly = "650";
 
-double weekly_savings = 200;
-double weekly_spendings = 500;
-int draw_savings_layer_basalt, draw_savings_layer_chalk;
+double weekly_savings[] = {16,200,650};
+double weekly_spendings[] = {65,500,1200};
+int draw_spent_layer_basalt, draw_spent_layer_chalk;
+
+int id = 1; //this will be used to iterate through the arrays when clicking up or down
 
 /*
 Start Programming here
@@ -63,7 +69,7 @@ static void prv_window_unload(Window *window) {
   text_layer_destroy(s_title_layer);
   text_layer_destroy(s_spent_layer);
   text_layer_destroy(s_saved_layer);
-  text_layer_destroy(s_savings_layer);
+  layer_destroy(s_savings_layer);
 
   //Unload GFont form memory
   fonts_unload_custom_font(title_font);
@@ -83,17 +89,14 @@ static void prv_window_load(Window *window) {
   title_font = fonts_load_custom_font(resource_get_handle(RESOURCE_ID_FONT_ROBOTO_MEDIUM_24));
   money_font = fonts_load_custom_font(resource_get_handle(RESOURCE_ID_FONT_ROBOTO_CONDENSED_REGULAR_14));
 
-  draw_savings_layer_basalt = (weekly_savings/(weekly_savings + weekly_spendings))*168;
-  draw_savings_layer_chalk = (weekly_savings/(weekly_savings + weekly_spendings))*180;
+  //Create canvase layer
+  s_savings_layer = layer_create(bounds);
 
-  //Set s_savings_layer
-  s_savings_layer = text_layer_create(GRect(0, PBL_IF_ROUND_ELSE(180-draw_savings_layer_chalk,
-                          168-draw_savings_layer_basalt), bounds.size.w, PBL_IF_ROUND_ELSE(180 - draw_savings_layer_chalk,
-                          168 - draw_savings_layer_basalt)));
+  // Assign the custom drawing procedure
+  layer_set_update_proc(s_savings_layer, canvas_update_proc);
 
-  text_layer_set_background_color(s_savings_layer, GColorTiffanyBlue);
-  layer_add_child(window_layer, text_layer_get_layer(s_savings_layer));
-
+  //Add to Windows
+  layer_add_child(window_get_root_layer(window), s_savings_layer);
 
 
   //Set title text layer accordingly
@@ -107,9 +110,9 @@ static void prv_window_load(Window *window) {
   layer_add_child(window_layer, text_layer_get_layer(s_title_layer));
 
 
-  char* test_spent = strcat(spent_header, spent_amount);
+  char* test_spent = strcat(spent_header, spent_amount_weekly);
   APP_LOG(APP_LOG_LEVEL_DEBUG, test_spent);           //LOGGING
-  char* test_saved = strcat(saved_header, saved_amount);
+  char* test_saved = strcat(saved_header, saved_amount_weekly);
   APP_LOG(APP_LOG_LEVEL_DEBUG, test_saved);           //LOGGING
 
 
@@ -135,22 +138,57 @@ static void prv_window_load(Window *window) {
 
 //Subscribe to clicks handlers (Make sure that you can click buttons in app)
 static void prv_click_config_provider(void *context) {
-  window_single_click_subscribe(BUTTON_ID_SELECT, prv_select_click_handler);
   window_single_click_subscribe(BUTTON_ID_UP, prv_up_click_handler);
   window_single_click_subscribe(BUTTON_ID_DOWN, prv_down_click_handler);
 }
 
 //What happens when UP button is pressed
 static void prv_up_click_handler(ClickRecognizerRef recognizer, void *context) {
-  text_layer_set_text(s_title_layer, "Up");
+  if (id != 2) {
+    id ++;
+
+    if (id == 1){
+      text_layer_set_text(s_title_layer, "WEEKLY");
+      text_layer_set_text(s_spent_layer, "SPENT: $500");
+      text_layer_set_text(s_saved_layer, "SAVED: $200");
+    }
+
+    if (id == 2){
+      text_layer_set_text(s_title_layer, "MONTHLY");
+      text_layer_set_text(s_spent_layer, "SPENT: $1200");
+      text_layer_set_text(s_saved_layer, "SAVED: $650");
+    }
+  }
 }
 
 //What happens when DOWN button is pressed
 static void prv_down_click_handler(ClickRecognizerRef recognizer, void *context) {
-  text_layer_set_text(s_title_layer, "Down");
+  if (id != 0){
+    id--;
+
+    if (id == 1){
+      text_layer_set_text(s_title_layer, "WEEKLY");
+      text_layer_set_text(s_spent_layer, "SPENT: $500");
+      text_layer_set_text(s_saved_layer, "SAVED: $200");
+    }
+
+    if (id == 0){
+      text_layer_set_text(s_title_layer, "DAILY");
+      text_layer_set_text(s_spent_layer, "SPENT: $65");
+      text_layer_set_text(s_saved_layer, "SAVED: $16");
+    }
+  }
 }
 
-//What happen when MIDDLE button is pressed
-static void prv_select_click_handler(ClickRecognizerRef recognizer, void *context) {
-  text_layer_set_text(s_title_layer, "Select");
+static void canvas_update_proc(Layer *layer, GContext *ctx) {
+  // Custom drawing happens here!
+  draw_spent_layer_basalt = (weekly_spendings[id]/(weekly_spendings[id] + weekly_savings[id])) * 168;
+  draw_spent_layer_chalk = (weekly_spendings[id]/(weekly_spendings[id] + weekly_savings[id])) * 180;
+
+  GRect rect_bounds = GRect(0, PBL_IF_ROUND_ELSE(draw_spent_layer_chalk, draw_spent_layer_basalt),
+                        PBL_IF_ROUND_ELSE(180,144), PBL_IF_ROUND_ELSE(draw_spent_layer_chalk, draw_spent_layer_basalt));
+
+  graphics_context_set_fill_color(ctx, GColorTiffanyBlue);
+  graphics_fill_rect(ctx, rect_bounds,0, GCornerNone);
+
 }
